@@ -274,6 +274,13 @@ class RerankAPIClient:
         """构建请求 URL"""
         base_url = self.config.rerank_base_url.rstrip("/")
         if self.config.rerank_api_type == "openai":
+            # 阿里云 DashScope: /v1/reranks (复数)
+            if "dashscope" in base_url:
+                if not base_url.endswith("/reranks"):
+                    if base_url.endswith("/v1"):
+                        return f"{base_url}/reranks"
+                    return f"{base_url}/v1/reranks"
+                return base_url
             # Jina/Cohere 兼容: /v1/rerank
             if not base_url.endswith("/rerank"):
                 if base_url.endswith("/v1"):

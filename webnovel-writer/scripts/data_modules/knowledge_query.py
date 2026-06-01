@@ -48,7 +48,7 @@ class KnowledgeQuery:
         try:
             rows = conn.execute(
                 """
-                SELECT from_entity, to_entity, relationship_type, description, chapter
+                SELECT from_entity, to_entity, type AS relationship_type, description, chapter
                 FROM relationship_events
                 WHERE (from_entity = ? OR to_entity = ?) AND chapter <= ?
                 ORDER BY chapter ASC, id ASC

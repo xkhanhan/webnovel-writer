@@ -42,9 +42,15 @@ def setup_db(tmp_path):
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             from_entity TEXT,
             to_entity TEXT,
-            relationship_type TEXT,
+            type TEXT NOT NULL,
+            action TEXT DEFAULT '',
+            polarity TEXT DEFAULT '',
+            strength REAL DEFAULT 0.0,
             description TEXT,
             chapter INTEGER,
+            scene_index INTEGER DEFAULT 0,
+            evidence TEXT DEFAULT '',
+            confidence REAL DEFAULT 1.0,
             created_at TEXT
         )
     """)
@@ -62,11 +68,11 @@ def setup_db(tmp_path):
         ("hanli", "realm", "筑基初期", "筑基中期", 50),
     )
     conn.execute(
-        "INSERT INTO relationship_events (from_entity, to_entity, relationship_type, chapter) VALUES (?, ?, ?, ?)",
+        "INSERT INTO relationship_events (from_entity, to_entity, type, chapter) VALUES (?, ?, ?, ?)",
         ("hanli", "陈巧倩", "同门", 20),
     )
     conn.execute(
-        "INSERT INTO relationship_events (from_entity, to_entity, relationship_type, chapter) VALUES (?, ?, ?, ?)",
+        "INSERT INTO relationship_events (from_entity, to_entity, type, chapter) VALUES (?, ?, ?, ?)",
         ("hanli", "陈巧倩", "合作", 45),
     )
     conn.commit()

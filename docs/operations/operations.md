@@ -2,7 +2,7 @@
 
 ## 目录层级
 
-## Phase 5 运维口径
+## 运维口径
 
 - `.story-system/`：主链真源
 - accepted `CHAPTER_COMMIT`：唯一写后事实入口

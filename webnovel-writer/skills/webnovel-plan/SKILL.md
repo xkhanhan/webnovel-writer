@@ -62,7 +62,7 @@ python -X utf8 "${SCRIPTS_DIR}/webnovel.py" --project-root "${PROJECT_ROOT}" pla
 ```bash
 # genre 从 state.json 的初始化配置快照读取；写前主链真源是 .story-system 合同树。
 # 必须先从详细大纲解析真实 CHAPTER_GOAL，禁止传 {章纲目标} / 第N章章纲目标 这类占位文本。
-GENRE="$(python -X utf8 -c "import json,sys; s=json.load(open('${PROJECT_ROOT}/.webnovel/state.json',encoding='utf-8')); print(s.get('project',{}).get('genre',''))")"
+GENRE="$(python -X utf8 -c "import json,sys; s=json.load(open('${PROJECT_ROOT}/.webnovel/state.json',encoding='utf-8')); pi=s.get('project_info',{}); print(pi.get('genre') or s.get('project',{}).get('genre',''))")"
 
 python -X utf8 "${SCRIPTS_DIR}/webnovel.py" --project-root "${WORKSPACE_ROOT}" \
   story-system "${CHAPTER_GOAL}" --genre "${GENRE}" --chapter {chapter_num} --persist --emit-runtime-contracts --format both
@@ -117,7 +117,7 @@ cat "$PROJECT_ROOT/.webnovel/state.json"
 cat "$PROJECT_ROOT/大纲/总纲.md"
 
 # 题材（来自 init 配置快照，后续 CSV 检索和裁决匹配依赖此值）
-GENRE="$(python -X utf8 -c "import json; s=json.load(open('${PROJECT_ROOT}/.webnovel/state.json',encoding='utf-8')); print(s.get('project',{}).get('genre',''))")"
+GENRE="$(python -X utf8 -c "import json; s=json.load(open('${PROJECT_ROOT}/.webnovel/state.json',encoding='utf-8')); pi=s.get('project_info',{}); print(pi.get('genre') or s.get('project',{}).get('genre',''))")"
 ```
 
 **已有卷的剧情状态**（跨卷规划时必须加载）：

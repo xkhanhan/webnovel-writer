@@ -93,7 +93,7 @@ GenreResolution(
 
 ### 3. Taxonomy Index
 
-新增 `webnovel-writer/templates/genres/index.csv`。它不是单纯模板清单，而是用户输入层的唯一 taxonomy 数据真源。
+新增 `webnovel-writer/references/taxonomy/genre-index.csv`。它不是单纯模板清单，而是用户输入层的唯一 taxonomy 数据真源。
 
 建议字段：
 
@@ -201,7 +201,7 @@ Phase 1.5 必须先定义并测试算法，不靠隐式行为：
 - `templates/genres/*.md`
   - H1 标题中文化。
   - 不移动文件。
-- `templates/genres/index.csv`
+- `references/taxonomy/genre-index.csv`
   - 覆盖 37 个模板。
   - 覆盖 `PLATFORM_TO_CANONICAL`、`_LEGACY_GENRE_MAP`、`_normalize_genre_key()`、`GENRE_INPUT_ALIASES` 的 label/alias 集合。
 - `scripts/genre_taxonomy.py`
@@ -267,7 +267,7 @@ Phase 1.5 必须先定义并测试算法，不靠隐式行为：
 
 范围：
 
-- 新增 `templates/genres/index.csv`。
+- 新增 `references/taxonomy/genre-index.csv`。
 - 覆盖现有 37 个模板文件。
 - 把以下集合全部纳入 index 的 `label` 或 `aliases`：
   - `GENRE_CANONICAL` 15 项和 `全部`。

@@ -141,11 +141,16 @@ Agent(
 - 核心冲突
 - 目标读者/平台
 
-题材集合（用于归一化与映射）：
-- 玄幻修仙类：修仙 | 系统流 | 高武 | 西幻 | 无限流 | 末世 | 科幻
-- 都市现代类：都市异能 | 都市日常 | 都市脑洞 | 现实题材 | 黑暗题材 | 电竞 | 直播文
-- 言情类：古言 | 宫斗宅斗 | 青春甜宠 | 豪门总裁 | 职场婚恋 | 民国言情 | 幻想言情 | 现言脑洞 | 女频悬疑 | 狗血言情 | 替身文 | 多子多福 | 种田 | 年代
-- 特殊题材：规则怪谈 | 悬疑脑洞 | 悬疑灵异 | 历史古代 | 历史脑洞 | 游戏体育 | 抗战谍战 | 知乎短篇 | 克苏鲁
+canonical 题材集合（写入 `project_info.genre`）：
+- 都市 | 玄幻 | 仙侠 | 奇幻 | 科幻
+- 历史 | 悬疑 | 游戏 | 古言 | 现言
+- 幻言 | 年代 | 种田 | 快穿 | 衍生
+
+可自由输入细分 preset / 套路 / 形式，初始化脚本会映射到 canonical 并按 taxonomy 加载模板：
+- 示例：修仙、系统流、高武、西幻、无限流、末世
+- 示例：都市异能、都市日常、都市脑洞、现实题材、电竞、直播文
+- 示例：规则怪谈、悬疑脑洞、悬疑灵异、克苏鲁、知乎短篇
+- 示例：古言、宫斗宅斗、青春甜宠、豪门总裁、职场婚恋、民国言情、幻想言情、种田、年代
 
 交互方式：
 - 优先让用户自由描述，再二次结构化确认。
@@ -348,7 +353,7 @@ python "${SCRIPTS_DIR}/webnovel.py" init \
 init 完成后，立即生成 MASTER_SETTING，让后续 plan 有调性/禁忌参照：
 
 ```bash
-GENRE="$(python -X utf8 -c "import json,os; root=os.environ['PROJECT_ROOT']; s=json.load(open(root + '/.webnovel/state.json',encoding='utf-8')); print(s.get('project',{}).get('genre',''))")"
+GENRE="$(python -X utf8 -c "import json,os; root=os.environ['PROJECT_ROOT']; s=json.load(open(root + '/.webnovel/state.json',encoding='utf-8')); pi=s.get('project_info',{}); print(pi.get('genre') or s.get('project',{}).get('genre',''))")"
 
 python -X utf8 "${SCRIPTS_DIR}/webnovel.py" --project-root "${PROJECT_ROOT}" \
   story-system "${GENRE}" --genre "${GENRE}" --persist --format json

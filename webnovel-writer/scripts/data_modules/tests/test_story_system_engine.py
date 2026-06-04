@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 
 from data_modules.story_system_engine import StorySystemEngine, StorySystemRoutingError
+from reference_search import GENRE_CANONICAL
 
 
 def _write_csv(path, headers, rows):
@@ -247,6 +248,35 @@ def test_story_system_routes_chinese_rules_mystery_to_canonical_suspense():
     assert route["canonical_genre"] == "悬疑"
     assert route["genre_filter"] == "悬疑"
     assert route["route_source"] != "default_seed_fallback"
+
+
+def test_story_system_routes_every_real_route_row():
+    csv_dir = Path(__file__).resolve().parents[3] / "references" / "csv"
+    engine = StorySystemEngine(csv_dir=csv_dir)
+    route_rows = engine._load_csv_rows("题材与调性推理")
+
+    assert route_rows
+    for row in route_rows:
+        aliases = (
+            engine._split_multi_value(row.get("关键词"))
+            + engine._split_multi_value(row.get("意图与同义词"))
+            + engine._split_multi_value(row.get("题材别名"))
+        )
+        query = next((value for value in aliases if value), row.get("题材/流派") or row.get("canonical_genre") or "")
+        contract = engine.build(query=query, genre=None, chapter=None)
+        route = contract["master_setting"]["route"]
+
+        canonical = route["canonical_genre"]
+        assert canonical in GENRE_CANONICAL or canonical == "全部"
+        if canonical == "全部":
+            assert route["genre_filter"] == ""
+        else:
+            assert route["genre_filter"] == canonical
+        assert route["route_source"] in {
+            "keyword_or_alias_match",
+            "explicit_genre_fallback",
+            "inferred_genre_fallback",
+        }
 
 
 def test_story_system_rejects_english_explicit_genre_even_when_query_routes():

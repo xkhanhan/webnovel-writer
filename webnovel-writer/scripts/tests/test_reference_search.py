@@ -292,25 +292,28 @@ class TestGenreCanonical:
         }
         assert GENRE_CANONICAL == expected
 
-    def test_platform_to_canonical_maps_all_tags(self):
-        from reference_search import PLATFORM_TO_CANONICAL
-        # 34 unique tags (some tags like 科幻末世, 悬疑脑洞, 游戏体育 appear in both male/female)
-        assert len(PLATFORM_TO_CANONICAL) == 34
-        # Every value must be a canonical genre
-        from reference_search import GENRE_CANONICAL
-        for tag, canonical in PLATFORM_TO_CANONICAL.items():
-            assert canonical in GENRE_CANONICAL, f"{tag} -> {canonical} not in GENRE_CANONICAL"
+    def test_taxonomy_index_covers_genre_templates(self):
+        from genre_taxonomy import load_genre_taxonomy
+        templates_dir = Path(__file__).resolve().parents[2] / "templates" / "genres"
+        template_files = {path.name for path in templates_dir.glob("*.md")}
+        referenced = {
+            entry.template_file
+            for entry in load_genre_taxonomy().entries
+            if entry.template_file
+        }
+        assert len(template_files) == 37
+        assert template_files <= referenced
 
-    def test_platform_to_canonical_spot_checks(self):
-        from reference_search import PLATFORM_TO_CANONICAL
-        assert PLATFORM_TO_CANONICAL["都市日常"] == "都市"
-        assert PLATFORM_TO_CANONICAL["战神赘婿"] == "都市"
-        assert PLATFORM_TO_CANONICAL["东方仙侠"] == "仙侠"
-        assert PLATFORM_TO_CANONICAL["西方奇幻"] == "奇幻"
-        assert PLATFORM_TO_CANONICAL["古风世情"] == "古言"
-        assert PLATFORM_TO_CANONICAL["豪门总裁"] == "现言"
-        assert PLATFORM_TO_CANONICAL["快穿"] == "快穿"
-        assert PLATFORM_TO_CANONICAL["科幻末世"] == "科幻"
+    def test_taxonomy_spot_checks_platform_and_legacy_inputs(self):
+        from reference_search import resolve_genre
+        assert resolve_genre("都市日常") == "都市"
+        assert resolve_genre("战神赘婿") == "都市"
+        assert resolve_genre("东方仙侠") == "仙侠"
+        assert resolve_genre("西方奇幻") == "奇幻"
+        assert resolve_genre("古风世情") == "古言"
+        assert resolve_genre("豪门总裁") == "现言"
+        assert resolve_genre("快穿") == "快穿"
+        assert resolve_genre("科幻末世") == "科幻"
 
     def test_resolve_genre_canonical_passthrough(self):
         from reference_search import resolve_genre
@@ -329,6 +332,24 @@ class TestGenreCanonical:
         assert resolve_genre("武侠") == "历史"
         assert resolve_genre("刑侦") == "悬疑"
         assert resolve_genre("网游") == "游戏"
+
+    def test_resolve_genre_keeps_template_namespace_separate(self):
+        from genre_taxonomy import resolve_genre_input
+        xuanhuan = resolve_genre_input("玄幻")
+        assert xuanhuan.canonical_genre == "玄幻"
+        assert xuanhuan.template_files == ["修仙.md"]
+
+        xianxia = resolve_genre_input("修仙")
+        assert xianxia.canonical_genre == "仙侠"
+        assert xianxia.template_files == ["修仙.md"]
+
+    def test_resolve_composite_natural_language_genre(self):
+        from genre_taxonomy import resolve_genre_input
+        resolved = resolve_genre_input("知乎短篇风的规则怪谈")
+        assert resolved.canonical_genre == "悬疑"
+        assert resolved.template_files == ["规则怪谈.md", "知乎短篇.md"]
+        assert "规则怪谈" in resolved.route_tags
+        assert "知乎短篇" in resolved.format_tags
 
     def test_search_with_platform_tag_genre(self):
         """--genre 都市日常 should match rows with 适用题材=都市."""

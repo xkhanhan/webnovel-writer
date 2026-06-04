@@ -18,6 +18,7 @@ from typing import Any, Dict, List, Optional
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from reference_search import CSV_CONFIG, GENRE_CANONICAL, split_multi_value
+from genre_taxonomy import default_taxonomy_path, load_genre_taxonomy
 
 
 _CHINESE_COMMA_RE = re.compile(r"，")
@@ -46,11 +47,46 @@ def _read_csv(path: Path) -> tuple[List[str], List[Dict[str, Any]]]:
     return headers, rows
 
 
+def _validate_genre_taxonomy(errors: List[str], warnings: List[str]) -> None:
+    taxonomy_path = default_taxonomy_path()
+    if not taxonomy_path.exists():
+        errors.append(f"[genre-index] 文件不存在: {taxonomy_path}")
+        return
+    try:
+        taxonomy = load_genre_taxonomy(str(taxonomy_path))
+    except Exception as exc:
+        errors.append(f"[genre-index] 加载失败: {exc}")
+        return
+
+    templates_dir = Path(__file__).resolve().parent.parent / "templates" / "genres"
+    template_files = {path.name for path in templates_dir.glob("*.md")}
+    referenced_files = {entry.template_file for entry in taxonomy.entries if entry.template_file}
+
+    missing_templates = sorted(referenced_files - template_files)
+    if missing_templates:
+        errors.append(f"[genre-index] template_file 不存在: {', '.join(missing_templates)}")
+
+    unreferenced_templates = sorted(template_files - referenced_files)
+    if unreferenced_templates:
+        errors.append(f"[genre-index] 模板未被 index 覆盖: {', '.join(unreferenced_templates)}")
+
+    for entry in taxonomy.entries:
+        if entry.template_file and not entry.template_file.endswith(".md"):
+            errors.append(f"[genre-index] {entry.label} template_file 应以 .md 结尾: {entry.template_file}")
+        if entry.canonical_genre != "全部" and entry.canonical_genre not in GENRE_CANONICAL:
+            errors.append(f"[genre-index] {entry.label} canonical_genre 不合法: {entry.canonical_genre}")
+
+    if len(template_files) != 37:
+        warnings.append(f"[genre-index] 当前模板数量为 {len(template_files)}，预期 37")
+
+
 def validate(csv_dir: Path) -> Dict[str, List[str]]:
     errors: List[str] = []
     warnings: List[str] = []
     all_ids: Dict[str, str] = {}
     valid_genres = GENRE_CANONICAL | {"全部"}
+
+    _validate_genre_taxonomy(errors, warnings)
 
     for table_name, config in CSV_CONFIG.items():
         csv_path = csv_dir / config["file"]

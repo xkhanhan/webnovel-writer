@@ -21,6 +21,8 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from genre_taxonomy import GENRE_CANONICAL, resolve_canonical_genre
+
 
 # ---------------------------------------------------------------------------
 # CSV loading
@@ -107,53 +109,8 @@ def _table_visible_for_search(table_name: str, skill: str, explicit_table: bool)
 
 
 # ---------------------------------------------------------------------------
-# Genre canonical list & platform tag mapping
+# Genre canonical resolution
 # ---------------------------------------------------------------------------
-
-GENRE_CANONICAL: set[str] = {
-    "都市", "玄幻", "仙侠", "奇幻", "科幻",
-    "历史", "悬疑", "游戏", "古言", "现言",
-    "幻言", "年代", "种田", "快穿", "衍生",
-}
-
-PLATFORM_TO_CANONICAL: Dict[str, str] = {
-    # 男频
-    "都市日常": "都市", "都市修真": "都市", "都市高武": "都市",
-    "战神赘婿": "都市", "都市种田": "都市", "都市脑洞": "都市",
-    "传统玄幻": "玄幻", "玄幻脑洞": "玄幻",
-    "东方仙侠": "仙侠",
-    "西方奇幻": "奇幻",
-    "科幻末世": "科幻",
-    "历史古代": "历史", "历史脑洞": "历史", "抗战谍战": "历史",
-    "悬疑脑洞": "悬疑", "悬疑灵异": "悬疑",
-    "游戏体育": "游戏",
-    "动漫衍生": "衍生", "男频衍生": "衍生",
-    # 女频
-    "古风世情": "古言", "宫斗宅斗": "古言", "古言脑洞": "古言",
-    "现言脑洞": "现言", "青春甜宠": "现言", "星光璀璨": "现言",
-    "职场婚恋": "现言", "豪门总裁": "现言",
-    "玄幻言情": "幻言",
-    "年代": "年代", "民国言情": "年代",
-    "种田": "种田",
-    "快穿": "快穿",
-    "女频悬疑": "悬疑",
-    "女频衍生": "衍生",
-}
-
-# Legacy values that appeared in old CSV data → canonical mapping.
-# Used by resolve_genre() during the migration period.
-_LEGACY_GENRE_MAP: Dict[str, str] = {
-    "东方仙侠": "仙侠", "西方奇幻": "奇幻", "科幻末世": "科幻",
-    "都市日常": "都市", "都市修真": "都市", "都市高武": "都市",
-    "历史古代": "历史",
-    "谍战": "历史", "军事": "历史", "武侠": "历史",
-    "刑侦": "悬疑", "惊悚": "悬疑", "推理": "悬疑", "规则怪谈": "悬疑",
-    "末世": "科幻", "赛博朋克": "科幻",
-    "网游": "游戏", "电竞": "游戏", "竞技": "游戏", "体育": "游戏",
-    "轻小说": "衍生", "同人": "衍生",
-    "校园": "现言", "青春": "现言", "娱乐圈": "现言", "职场": "现言",
-    "高武": "都市",
-}
 
 
 def resolve_genre(genre: Optional[str]) -> Optional[str]:
@@ -164,14 +121,7 @@ def resolve_genre(genre: Optional[str]) -> Optional[str]:
     """
     if genre is None:
         return None
-    g = genre.strip()
-    if g in GENRE_CANONICAL or g == "全部":
-        return g
-    if g in PLATFORM_TO_CANONICAL:
-        return PLATFORM_TO_CANONICAL[g]
-    if g in _LEGACY_GENRE_MAP:
-        return _LEGACY_GENRE_MAP[g]
-    return g  # unresolvable — pass through
+    return resolve_canonical_genre(genre)
 
 
 # ---------------------------------------------------------------------------
@@ -423,8 +373,6 @@ def search(
 
     Returns a result dict suitable for JSON serialisation.
     """
-    resolved = resolve_genre(genre)
-
     if not csv_dir.is_dir():
         return {
             "status": "error",
@@ -454,7 +402,7 @@ def search(
         if not _table_visible_for_search(tbl_name, skill, explicit_table=table is not None):
             continue
         for row in rows:
-            if _skill_matches(row, skill) and _genre_matches(row, resolved):
+            if _skill_matches(row, skill) and _genre_matches(row, genre):
                 candidates.append((tbl_name, row))
 
     if not candidates:

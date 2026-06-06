@@ -83,12 +83,16 @@ python -X utf8 "${SCRIPTS_DIR}/webnovel.py" --project-root "${PROJECT_ROOT}" \
 
 必须使用 `Agent` 工具调用 `context-agent`，不得由主流程自行整理任务书。
 
-```text
-Agent(
-  subagent_type: "webnovel-writer:context-agent",
-  prompt: "chapter={chapter_num}; project_root=${PROJECT_ROOT}; scripts_dir=${SCRIPTS_DIR}; storage_path=${PROJECT_ROOT}/.webnovel; state_file=${PROJECT_ROOT}/.webnovel/state.json（projection/read-model，仅兼容读取）。先 research，再按 本章硬性约束→CBN/CPNs/CEN→本章禁区→风格指引→dynamic_context补充参考 的顺序输出五段写作任务书。"
-)
-```
+Use the Agent tool to run `webnovel-writer:context-agent`.
+
+Task:
+- chapter={chapter_num}
+- project_root=${PROJECT_ROOT}
+- scripts_dir=${SCRIPTS_DIR}
+- storage_path=${PROJECT_ROOT}/.webnovel
+- state_file=${PROJECT_ROOT}/.webnovel/state.json（projection/read-model，仅兼容读取）
+- 先 research，再按 本章硬性约束 → CBN/CPNs/CEN → 本章禁区 → 风格指引 → dynamic_context 补充参考 的顺序输出五段写作任务书。
+- 上下文不足时返回 blocker。
 
 产物：一份写作任务书，能独立支撑 Step 2 起草。
 
@@ -100,12 +104,17 @@ Agent(
 
 必须使用 `Agent` 工具调用 `reviewer`，不得由主流程伪造审查 JSON。
 
-```text
-Agent(
-  subagent_type: "webnovel-writer:reviewer",
-  prompt: "chapter={chapter_num}; chapter_file=${CHAPTER_FILE}; project_root=${PROJECT_ROOT}; scripts_dir=${SCRIPTS_DIR}。严格输出 reviewer schema JSON，并保存到 ${PROJECT_ROOT}/.webnovel/tmp/review_results.json。"
-)
-```
+Use the Agent tool to run `webnovel-writer:reviewer`.
+
+Task:
+- chapter={chapter_num}
+- chapter_file=${CHAPTER_FILE}
+- project_root=${PROJECT_ROOT}
+- scripts_dir=${SCRIPTS_DIR}
+- 只返回严格的 reviewer schema JSON，不写任何文件。
+- 不评分、不口头总结。
+
+reviewer 只返回 JSON；主流程负责用 `Write` 把返回的 JSON 写入 `${PROJECT_ROOT}/.webnovel/tmp/review_results.json`（reviewer 不持 Write，是这份 artifact 的非写入方），随后运行 review-pipeline。
 
 ```bash
 python -X utf8 "${SCRIPTS_DIR}/webnovel.py" --project-root "${PROJECT_ROOT}" review-pipeline \
@@ -132,21 +141,42 @@ python -X utf8 "${SCRIPTS_DIR}/webnovel.py" --project-root "${PROJECT_ROOT}" rev
 
 必须使用 `Agent` 工具调用 `data-agent`，产出 fulfillment_result / disambiguation_result / extraction_result 三份 JSON，并复用 Step 3 的 review_results。
 
-```text
-Agent(
-  subagent_type: "webnovel-writer:data-agent",
-  prompt: "chapter={chapter_num}; chapter_file=${CHAPTER_FILE}; project_root=${PROJECT_ROOT}; scripts_dir=${SCRIPTS_DIR}。从正文提取事实，生成 .webnovel/tmp/ 下的 fulfillment_result.json、disambiguation_result.json、extraction_result.json；fulfillment_result.json 必须顶层包含 planned_nodes/covered_nodes/missed_nodes/extra_nodes；disambiguation_result.json 必须顶层包含 pending；extraction_result.json 必须严格按你的第7节格式输出顶层字段 accepted_events/state_deltas/entity_deltas/entities_appeared/scenes/summary_text，禁止包在 chapter/fulfillment/disambiguation/extraction 等外层对象里；accepted_events 子项必须包含 event_id/chapter/event_type/subject/payload；不直接写 state/index/summaries/memory。"
-)
-```
+Use the Agent tool to run `webnovel-writer:data-agent`.
 
-Data Agent 只提取事实+生成 artifacts，不直接写 state/index/summaries/memory。
+Task:
+- chapter={chapter_num}
+- chapter_file=${CHAPTER_FILE}
+- project_root=${PROJECT_ROOT}
+- scripts_dir=${SCRIPTS_DIR}
+- output_dir=${PROJECT_ROOT}/.webnovel/tmp
+- 按你自己的 schema（见 data-agent 输出格式段）生成 fulfillment_result.json、disambiguation_result.json、extraction_result.json 三份 artifact。
+- 你是这三份 artifact 的唯一写入者；不直接写 state/index/summaries/memory/vectors/projection。
 
-#### 5.2 CHAPTER_COMMIT
+artifact 字段 schema 由 data-agent 自身定义、runtime validator 校验；主流程只检查文件存在与 schema，不重写、不补写、不口头替代。
+
+#### 5.2 提交前校验与 CHAPTER_COMMIT
+
+先跑 precommit gate：
 
 ```bash
 python -X utf8 "${SCRIPTS_DIR}/webnovel.py" --project-root "${PROJECT_ROOT}" \
   write-gate --chapter {chapter_num} --stage precommit --format json
+```
 
+precommit 通过后，运行提交前只读 `git diff` 变更面校验（写入所有权 sanity check，只读、不 stage、不提交）：
+
+```bash
+if git -C "${PROJECT_ROOT}" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  git -C "${PROJECT_ROOT}" diff --name-status -- .
+  git -C "${PROJECT_ROOT}" diff --check -- .
+fi
+```
+
+变更面不得出现插件目录、其他书项目、其他章节正文或不属于本章流程的手写状态文件；`git diff` 只覆盖 git 可见文件，SQLite / `.webnovel/` 内部语义由 5.3 postcommit 与 runtime 只读查询验证。若项目根不是 git worktree，记录“跳过 git diff 校验”，不得因此跳过 precommit gate。本步只读，禁止在此执行 `git add`/`git commit`。
+
+校验通过后运行 chapter-commit：
+
+```bash
 python -X utf8 "${SCRIPTS_DIR}/webnovel.py" --project-root "${PROJECT_ROOT}" chapter-commit \
   --chapter {chapter_num} \
   --review-result "${PROJECT_ROOT}/.webnovel/tmp/review_results.json" \

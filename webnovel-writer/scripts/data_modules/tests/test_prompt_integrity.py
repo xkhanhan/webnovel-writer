@@ -272,14 +272,14 @@ def test_active_skills_use_agent_tool_name_not_legacy_task():
 
 
 def test_webnovel_write_skill_uses_explicit_agent_invocation_templates():
-    """webnovel-write 的关键 subagent 必须用显式 Agent(subagent_type=...) 调用模板。"""
+    """关键 subagent 必须经 Agent 工具按注册名 webnovel-writer:X 显式调用；不再用伪函数 subagent_type 块（plan §4.4.2/§8.4）。"""
     text = _read_text(SKILLS_DIR / "webnovel-write" / "SKILL.md")
     fm = _extract_frontmatter(text)
 
     assert "Agent" in fm.get("allowed-tools", "")
     for subagent in ("context-agent", "reviewer", "data-agent"):
-        assert f'subagent_type: "webnovel-writer:{subagent}"' in text
-        assert f'subagent_type: "{subagent}"' not in text
+        assert f"webnovel-writer:{subagent}" in text, f"缺少 {subagent} 的注册名显式调用"
+    assert "subagent_type:" not in text, "不应再使用伪函数 subagent_type 调用块"
     assert "不得用主流程口头代替 subagent 输出" in text
 
 
@@ -347,16 +347,10 @@ def test_data_agent_is_described_as_extraction_only_not_direct_write_mainline():
     assert "直接写入 index.db 和 state.json" not in text
 
 
-def test_webnovel_write_data_agent_prompt_requires_extraction_schema():
-    text = (SKILLS_DIR / "webnovel-write" / "SKILL.md").read_text(encoding="utf-8")
-    assert "webnovel-writer:data-agent" in text
-    assert "fulfillment_result.json 必须顶层" in text
-    assert "planned_nodes/covered_nodes/missed_nodes/extra_nodes" in text
-    assert "disambiguation_result.json 必须顶层包含 pending" in text
-    assert "extraction_result.json 必须严格" in text
-    assert "accepted_events/state_deltas/entity_deltas" in text
-    assert "禁止包在 chapter/fulfillment/disambiguation/extraction" in text
-    assert "event_id/chapter/event_type/subject/payload" in text
+# (已按 plan §12.2 退役) test_webnovel_write_data_agent_prompt_requires_extraction_schema：
+# 该测试逐字要求主 Skill 写出 data artifact 的 schema 字段名，与判据一冲突。schema 字段保障已迁到
+# data-agent.md 生产方（test_data_agent_is_described_as_extraction_only_not_direct_write_mainline）
+# + precommit 负向用例（Task 7）。主 Skill 不再内联长 schema。
 
 
 def test_dashboard_and_plan_skills_surface_story_runtime_mainline():
@@ -642,16 +636,14 @@ def test_agent_write_ownership_matches_tools_frontmatter():
 
 # B 类红线（提交前变更面校验）：write SKILL 在 chapter-commit 前必须执行只读 git diff 变更面校验。
 # 现状 write SKILL 尚无此步 → 标 xfail；Task 5（Phase 1）实现后移除本标记，转为硬守护。
-@pytest.mark.xfail(
-    reason="B 类新契约：提交前只读 git diff 变更面校验由 Phase 1 (Task 5) 落地，落地后移除本标记",
-    strict=False,
-)
+# B 类红线（提交前变更面校验）：write SKILL 在 chapter-commit 前必须执行只读 git diff 变更面校验。
+# Phase 1 (Task 5) 已落地 → 转为硬守护（移除 xfail 标记）。
 def test_write_skill_has_readonly_git_diff_change_surface_check():
     """红线（提交前变更面校验）：write SKILL 在 chapter-commit 前执行只读 git diff 校验。"""
     text = _read_text(SKILLS_DIR / "webnovel-write" / "SKILL.md")
-    assert "git diff --name-status" in text, (
+    assert "diff --name-status" in text, (
         "write SKILL 缺少提交前只读 git diff --name-status 变更面校验"
     )
-    assert "git diff --check" in text, (
+    assert "diff --check" in text, (
         "write SKILL 缺少 git diff --check 空白/冲突标记校验"
     )

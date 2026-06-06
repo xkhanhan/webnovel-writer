@@ -24,6 +24,9 @@ Thumbs.db
 .idea/
 .cursor/
 
+# Git worktrees
+.worktrees/
+
 # Workspace artifacts
 node_modules/
 .npm-cache/

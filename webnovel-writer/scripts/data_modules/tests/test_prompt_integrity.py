@@ -110,7 +110,7 @@ def test_skill_frontmatter_complete(skill_file: Path):
 
 
 # ---------------------------------------------------------------------------
-# 2. Agent 模板结构（9 段）
+# 2. Agent 模板结构（≥4 段）
 # ---------------------------------------------------------------------------
 
 EXPECTED_AGENT_SECTIONS = [
@@ -237,8 +237,8 @@ def test_webnovel_review_skill_uses_unified_reviewer_pipeline():
     skill_text = _read_text(SKILLS_DIR / "webnovel-review" / "SKILL.md")
 
     assert "`reviewer`" in skill_text
-    assert "Agent(" in skill_text
-    assert 'subagent_type: "webnovel-writer:reviewer"' in skill_text
+    assert "Use the Agent tool to run `webnovel-writer:reviewer`" in skill_text
+    assert "subagent_type:" not in skill_text
     assert "review-pipeline" in skill_text
     assert ".webnovel/tmp/review_results.json" in skill_text
     assert ".webnovel/tmp/review_metrics.json" in skill_text
@@ -454,7 +454,8 @@ def test_webnovel_init_deconstruction_wiring_keeps_confirmation_gate():
     """init may consume only confirmed, transformed reference patterns."""
     text = _read_text(SKILLS_DIR / "webnovel-init" / "SKILL.md")
 
-    assert 'subagent_type: "webnovel-writer:deconstruction-agent"' in text
+    assert "Use the Agent tool to run `webnovel-writer:deconstruction-agent`" in text
+    assert "subagent_type:" not in text
     assert "Step 1.5：灵感来源询问" in text
     assert "进入故事核采集前" in text
     assert "不要默认拆书" in text

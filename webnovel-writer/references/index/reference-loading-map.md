@@ -102,5 +102,7 @@
 | `skills/webnovel-write/references/writing/dialogue-writing.md` | 已 stub 化，正文迁至 CSV `写作技法` |
 | `skills/webnovel-write/references/writing/emotion-psychology.md` | 已 stub 化，正文迁至 CSV `写作技法` |
 | `skills/webnovel-write/references/writing/scene-description.md` | 已 stub 化，正文迁至 CSV `写作技法` |
+| `skills/webnovel-write/references/writing/desire-description.md` | 保守保留原文；CSV 尚未覆盖欲念描写细节，当前未被 SKILL.md 直接加载 |
+| `skills/webnovel-write/references/writing/genre-hook-payoff-library.md` | 保守保留原文；CSV 仅覆盖部分钩子/兑现条目，当前未被 SKILL.md 直接加载 |
 | `skills/webnovel-review/references/common-mistakes.md` | 未在当前 review 流程中直接加载 |
 | `skills/webnovel-review/references/pacing-control.md` | 未在当前 review 流程中直接加载 |

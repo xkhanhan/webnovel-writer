@@ -66,10 +66,9 @@ cat "${PROJECT_ROOT}/.webnovel/state.json"
 必须通过 `Agent` 工具调用 `reviewer`。审查方法与维度细则由 reviewer 自带，本 Skill 不展开。
 
 ```text
-Agent(
-  subagent_type: "webnovel-writer:reviewer",
-  prompt: "chapter={chapter_num}; chapter_file={chapter_file}; project_root=${PROJECT_ROOT}; scripts_dir=${SCRIPTS_DIR}。严格输出 reviewer schema JSON，不评分，不口头总结。"
-)
+Use the Agent tool to run `webnovel-writer:reviewer`.
+
+Prompt: chapter={chapter_num}; chapter_file={chapter_file}; project_root=${PROJECT_ROOT}; scripts_dir=${SCRIPTS_DIR}。严格输出 reviewer schema JSON，不评分，不口头总结。
 ```
 
 reviewer 返回后，主流程把严格 JSON 写入 `${PROJECT_ROOT}/.webnovel/tmp/review_results.json`（reviewer 不持 Write，是这份 artifact 的非写入方）。

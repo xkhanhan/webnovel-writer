@@ -863,6 +863,8 @@ def test_review_pipeline_main_creates_output_directories(tmp_path):
     assert report_file.is_file()
     report_text = report_file.read_text(encoding="utf-8")
     assert "# 第9章审查报告" in report_text
+    assert "## 作者视图" in report_text
+    assert "本章结论：⚠️建议改" in report_text
     assert "小问题" in report_text
     assert "## 其他问题" in report_text
 

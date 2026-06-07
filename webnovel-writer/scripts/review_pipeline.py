@@ -25,6 +25,7 @@ def _ensure_scripts_path() -> None:
 
 _ensure_scripts_path()
 
+from data_modules.review_author_view import render_review_author_view
 from data_modules.review_schema import append_ai_flavor_anti_patterns, parse_review_output
 
 
@@ -71,6 +72,8 @@ def render_review_report(payload: Dict[str, Any]) -> str:
 
     lines: List[str] = [
         f"# 第{payload['chapter']}章审查报告",
+        "",
+        render_review_author_view(payload).rstrip(),
         "",
         "## 总览",
         "",

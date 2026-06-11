@@ -1,5 +1,11 @@
 # 2026-06-10 全项目审查修复计划
 
+> **状态（2026-06-11 截断）：** 本计划随 v7 绞杀式收敛（`docs/architecture/story-repo-spec-2026-06-10.md`）截断收口。
+> - **已完成并保留**：Phase 0 全部（Task 1-6，正文数据安全）+ Task 7——这是 v6 用户数据与 v7 迁移器读取的地基。
+> - **作废**：Task 8-24（Phase 1 数据链）、Task 26-27、Task 29-34——目标模块（SQLite 投影、event log、v6 提示词、dashboard、CLI 样板）在 v7 中整体删除，不再修缮。
+> - **例外保留为独立候选**：Task 25（嵌入默认出网，隐私问题，若 v6 分支再发维护版则必修）、Task 28（CI 加固，仓库层面，v7 继续复用，可随时单独做）。
+> - 分支 `fix/audit-2026-06-10` 以 Phase 0 + Task 7 收口合入 master，作为 v6 最后一批数据安全维护。
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 修复 2026-06-10 深度审查发现的全部高/中危问题：数据丢失路径、数据链不一致、skill 流程死锁、隐私出网默认值与守卫绕过。

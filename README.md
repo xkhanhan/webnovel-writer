@@ -14,7 +14,9 @@
 
 一句话定位：这是一套面向长篇连载的一致性系统，不是写完就忘的一次性生成器。
 
-> 📊 **投票进行中**：[下一步你最想先看到哪个方向？](https://github.com/lingfengQAQ/webnovel-writer/discussions/107) 来投一票，帮我们排排优先级。
+> **v7 重构 RFC 公示中**
+>
+> 下一代 v7 设计已经进入公开意见征集期，欢迎阅读 [Discussions #118：v7 设计公示](https://github.com/lingfengQAQ/webnovel-writer/discussions/118) 并留下反馈。只看 Issue 区的用户也可以从 [Issue #119：v7 公示指引帖](https://github.com/lingfengQAQ/webnovel-writer/issues/119) 进入；原“下一步方向投票”已结束，后续优先级将以 RFC 反馈和实施计划为准。
 
 ## 为什么需要它
 

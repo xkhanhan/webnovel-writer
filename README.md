@@ -1,7 +1,7 @@
 # Webnovel Writer
 
 [![License](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-6.3.3-brightgreen.svg)](.claude-plugin/marketplace.json)
+[![Version](https://img.shields.io/badge/version-6.4.0-brightgreen.svg)](.claude-plugin/marketplace.json)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-Compatible-purple.svg)](https://claude.ai/claude-code)
 [![Marketplace](https://img.shields.io/badge/Claude%20Code-Marketplace-black.svg)](.claude-plugin/marketplace.json)
@@ -315,7 +315,8 @@ Webnovel Writer 用业余时间维护。如果它帮你省下了梳理设定、�
 
 | 版本 | 主要变化 |
 |------|----------|
-| **v6.3.3 (当前)** | Step 1.1 新增 writer 输入日志，记录 context-agent 输出给 writer 的完整任务书 |
+| **v6.4.0 (当前)** | 新增 polisher 润色 agent 和 /webnovel-polish 独立 skill |
+| **v6.3.3** | Step 1.1 新增 writer 输入日志，记录 context-agent 输出给 writer 的完整任务书 |
 | **v6.3.2** | writer agent 输入日志增加思考内容记录 |
 | **v6.3.1** | writer agent 增加字数约束和输入日志 |
 | **v6.3.0** | 新增 writer 写作 agent，Step 2 从裸指令升级为专业写作 agent |

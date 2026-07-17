@@ -113,7 +113,23 @@ Task:
 
 上下文不足、legacy fallback、伏笔数据缺失、任务书不完整或耗时异常，必须写入 `problems` / `auto_handled`，不得在最终报告中静默。
 
-### Step 2：writer 起草正文
+### step 1.1 写入输入日志
+
+context-agent 返回任务书后，主流程负责把任务书原文和关键元数据写入日志，供作者排查 writer 拿到了什么信息。
+
+```bash
+cat > "${PROJECT_ROOT}/.webnovel/tmp/webnovel-writer_input_ch{chapter_num}.log" << 'LOGEOF'
+=== writer 输入日志 ===
+章节：{chapter_num}
+时间：{timestamp}
+
+--- 任务书原文 ---
+{context-agent 返回的任务书全文，一字不改}
+
+LOGEOF
+```
+
+五段完整性检查任一段缺失时，在日志中标注 `缺失`，同时写入 `problems`。日志只写不读，不阻断流程。### Step 2：writer 起草正文
 
 必须使用 `Agent` 工具调用 `writer`，不得由主流程自行起草。
 

@@ -113,9 +113,38 @@ Task:
 
 上下文不足、legacy fallback、伏笔数据缺失、任务书不完整或耗时异常，必须写入 `problems` / `auto_handled`，不得在最终报告中静默。
 
-### Step 2：起草正文
+### Step 2：writer 起草正文
 
-只根据任务书起草。不加载 core-constraints/anti-ai-guide（已内化到任务书）。只输出纯正文，无占位符。有结构化节点时围绕 CBN→CPNs→CEN 展开。中文思维写作。
+必须使用 `Agent` 工具调用 `writer`，不得由主流程自行起草。
+
+Use the Agent tool to run `webnovel-writer:writer`.
+
+Task:
+- task_brief=context-agent 输出的五段写作任务书（纯文本，直接传递）
+- chapter={chapter_num}
+- project_root=${PROJECT_ROOT}
+- scripts_dir=${SCRIPTS_DIR}
+- 先加载文风参考（anti-ai-guide、我的文风.md、参考作家），再拆解任务书，再起草正文。
+- 只输出纯正文，无占位符。有结构化节点时围绕 CBN→CPNs→CEN 展开。
+
+产物：可发布的章节正文。
+
+调用后主流程必须记录 `SubagentRun` 汇总（仅供最终报告使用）：
+
+```json
+{
+  "name": "writer",
+  "user_label": "起草正文",
+  "status": "completed | partial | failed | skipped",
+  "problems": [],
+  "auto_handled": [],
+  "needs_user_action": false,
+  "duration_ms": 0,
+  "outputs": []
+}
+```
+
+任务书 blocker、文风文件缺失、字数不足或无法覆盖必须节点，必须写入 `problems` / `auto_handled`。
 
 ### Step 3：审查
 
